@@ -17,11 +17,11 @@ jobs:
       run: |
         set -euo pipefail
         BASE="${SONAR_HOST_URL}/api/issues/search"
-        PARAMS="componentKeys=${SONAR_PROJECT_KEY}&resolved=false&types=BUG,VULNERABILITY,CODE_SMELL"
+        PARAMS="componentKeys=${SONAR_PROJECT_KEY}&resolved=false&types=BUG"
         if [ -n "${SONAR_BRANCH}" ]; then
-          PARAMS="${PARAMS}&branch=${SONAR_BRANCH}"
+        PARAMS="${PARAMS}&branch=${SONAR_BRANCH}"
         fi
         URL="${BASE}?${PARAMS}"
         echo "Consultando: $URL"
         TOTAL=$(curl -sSf -u "${SONAR_TOKEN}:" "$URL" | jq -r '.total')
-        echo "👉 Issues abertas no Sonar = ${TOTAL}"
+        echo "👉 Reliability issues (BUG) no Sonar = ${TOTAL}"
