@@ -2,5 +2,6 @@
 
 
 ![Coverage](./coverage.svg)
-[![Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)](#)
+![Java](https://img.shields.io/badge/Java-21-blue?logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen?logo=springboot&logoColor=white
 [![License](https://img.shields.io/badge/license-MIT-green)](#)
