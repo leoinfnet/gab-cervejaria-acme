@@ -15,16 +15,6 @@ jobs:
         SONAR_PROJECT_KEY: Cervejaria-ACME
         SONAR_BRANCH: main    # opcional, se quiser filtrar por branch
       run: |
-        set -euo pipefail
-        BASE="${SONAR_HOST_URL}/api/issues/search"
-        PARAMS="componentKeys=${SONAR_PROJECT_KEY}&resolved=false&types=BUG"
-        if [ -n "${SONAR_BRANCH}" ]; then
-          PARAMS="${PARAMS}&branch=${SONAR_BRANCH}"
-        fi
-        URL="${BASE}?${PARAMS}"
-        echo "Consultando: $URL"
-        TOTAL=$(curl -sSf -u "${SONAR_TOKEN}:" "$URL" | jq -r '.total')
-        echo "👉 Issues abertas no Sonar = ${TOTAL}"
-        
-        
-        -
+        URL="${SONAR_HOST_URL}/api/project_issues/issues?issueStatuses=OPEN,CONFIRMED&impactSoftwareQualities=RELIABILITY&id=Cervejaria-ACME"
+        TOTAL=$(curl -sSf -u "${SONAR_TOKEN}:" "$URL" | jq -r '.total // 0')
+        echo "👉 Reliability issues (OPEN/CONFIRMED) = $TOTAL"
