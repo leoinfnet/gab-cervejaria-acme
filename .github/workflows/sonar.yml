@@ -19,6 +19,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - name: Install Maven
+        uses: actions/stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.8.2
+
       - name: Sonar Analises
         run: |
           mvn clean verify sonar:sonar \  
