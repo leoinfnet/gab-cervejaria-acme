@@ -18,3 +18,18 @@ jobs:
         URL="${SONAR_HOST_URL}/api/project_issues/issues?issueStatuses=OPEN,CONFIRMED&impactSoftwareQualities=RELIABILITY&id=Cervejaria-ACME"
         TOTAL=$(curl -sSf -u "${SONAR_TOKEN}:" "$URL" | jq -r '.total // 0')
         echo "👉 Reliability issues (OPEN/CONFIRMED) = $TOTAL"
+    - name: Abrir Issue se Reliability > 10
+      if: ${{ steps.sonar_rel_count.outputs.total > 10 }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GIT_TOKEN }}   # token automático do workflow
+        REPO: ${{ github.repository }}
+        COUNT: ${{ steps.sonar_rel_count.outputs.total }}
+      run: |
+        set -euo pipefail
+        TITLE="[Alert] Sonar: Reliability issues acima de 10"
+        BODY="Total atual de Reliability issues (OPEN/CONFIRMED): ${COUNT}\n\nAção sugerida: priorizar correções."
+        curl -sSf -X POST "https://api.github.com/repos/${REPO}/issues" \
+          -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+          -H "Accept: application/vnd.github+json" \
+          -H "Content-Type: application/json" \
+          -d "$(jq -n --arg t "$TITLE" --arg b "$BODY" '{title:$t, body:$b}')"
