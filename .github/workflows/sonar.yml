@@ -2,7 +2,7 @@ name: Running Sonar
 on:
   push:
     branches:
-      - main
+      - outra
 
 jobs:
   build-sonar-badges:
@@ -43,7 +43,6 @@ jobs:
       - name: LS
         run: |
           ls -la
-
       - name: Sonar Analises
         run: |
           mvn clean -DskipTests -q verify sonar:sonar -Dsonar.projectKey=Cervejaria-ACME -Dsonar.projectName='Cervejaria ACME' -Dsonar.host.url=http://ec2-35-90-57-172.us-west-2.compute.amazonaws.com:9000 -Dsonar.token=sqp_a2bbafbebf2d8963f5bd16799175482b4add85c3
