@@ -23,6 +23,9 @@ jobs:
         uses: stCarolas/setup-maven@v5
         with:
           maven-version: 3.8.2
+      - name: LS
+        run: |
+          ls -la
 
       - name: Sonar Analises
         run: |
