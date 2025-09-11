@@ -1,0 +1,28 @@
+name: Running Sonar
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-sonar-badges:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write         # p/ commitar badges
+      pull-requests: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Sonar Analises
+        run: |
+          mvn clean verify sonar:sonar \  
+           -Dsonar.projectKey=Cervejaria-ACME \   
+           -Dsonar.projectName='Cervejaria ACME' \   
+           -Dsonar.host.url=http://ec2-35-90-57-172.us-west-2.compute.amazonaws.com:9000 \  
+           -Dsonar.token=sqp_a2bbafbebf2d8963f5bd16799175482b4add85c3
