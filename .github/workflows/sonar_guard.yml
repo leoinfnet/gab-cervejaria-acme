@@ -11,7 +11,7 @@ jobs:
     - name: Contar issues abertas no Sonar
       env:
         SONAR_HOST_URL: 'http://ec2-35-90-57-172.us-west-2.compute.amazonaws.com:9000'
-        SONAR_TOKEN: 'sqp_e59b64ac6b17268fb35e325427aadcca2b336487'
+        SONAR_TOKEN: 'sqp_a4a372691e08b461fbc7cb35a4b4778e87d36209'
         SONAR_PROJECT_KEY: Cervejaria-ACME
         SONAR_BRANCH: main    # opcional, se quiser filtrar por branch
       run: |

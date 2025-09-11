@@ -45,4 +45,4 @@ jobs:
           ls -la
       - name: Sonar Analises
         run: |
-          mvn clean -DskipTests -q verify sonar:sonar -Dsonar.projectKey=Cervejaria-ACME -Dsonar.projectName='Cervejaria ACME' -Dsonar.host.url=http://ec2-35-90-57-172.us-west-2.compute.amazonaws.com:9000 -Dsonar.token=sqp_e59b64ac6b17268fb35e325427aadcca2b336487
+          mvn clean -DskipTests -q verify sonar:sonar -Dsonar.projectKey=Cervejaria-ACME -Dsonar.projectName='Cervejaria ACME' -Dsonar.host.url=http://ec2-35-90-57-172.us-west-2.compute.amazonaws.com:9000 -Dsonar.token=sqp_a4a372691e08b461fbc7cb35a4b4778e87d36209
