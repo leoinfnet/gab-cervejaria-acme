@@ -41,29 +41,35 @@ jobs:
 
       - name: Deploy on EC2 (atomic symlink + restart)
         run: |
+      - name: Deploy on EC2 (atomic symlink + restart)
+        run: |
           set -euo pipefail
           VERSION="$(cat bundle/version.txt)"
           PORT="${{ secrets.EC2_SSH_PORT || 22 }}"
           USER=ec2-user
           HOST=ec2-44-245-179-63.us-west-2.compute.amazonaws.com
-
+          
           # (Opcional) teste rápido de SSH
           ssh -o StrictHostKeyChecking=no -p "$PORT" "$USER@$HOST" "echo conectado; uname -a"
-
-          # Passa VERSION para o remoto e roda script lá
+          
+          # Passa VERSION para o remoto e roda o script lá
           ssh -o StrictHostKeyChecking=no -p "$PORT" "$USER@$HOST" \
-          "VERSION='$VERSION' bash -lc '
+            "VERSION='$VERSION' bash -lc '
               set -euo pipefail
               SERVICE=cervejaria
               APP_DIR=/opt/app
-              REL_DIR=$APP_DIR/releases/$VERSION
-      
-              sudo mkdir -p \"$REL_DIR\"
-              sudo tar xzf /tmp/bundle-$VERSION.tgz -C \"$REL_DIR\"
-      
-              sudo ln -sfn \"$REL_DIR\" \"$APP_DIR/current\"
-              sudo ln -sfn \"$REL_DIR/app.jar\" \"$APP_DIR/current/app.jar\"
-      
+              REL_DIR=\$APP_DIR/releases/\$VERSION
+              TARBALL=/tmp/bundle-\$VERSION.tgz
+          
+              # sanity check
+              [ -f \"\$TARBALL\" ] || { echo \"ERRO: pacote não existe: \$TARBALL\" >&2; exit 2; }
+          
+              sudo mkdir -p \"\$REL_DIR\"
+              sudo tar xzf \"\$TARBALL\" -C \"\$REL_DIR\"
+          
+              sudo ln -sfn \"\$REL_DIR\" \"\$APP_DIR/current\"
+              sudo ln -sfn \"\$REL_DIR/app.jar\" \"\$APP_DIR/current/app.jar\"
+          
               sudo systemctl daemon-reload
-              sudo systemctl restart \"$SERVICE\"
+              sudo systemctl restart \"\$SERVICE\"
             '"
