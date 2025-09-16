@@ -21,7 +21,7 @@ jobs:
         with:
           maven-version: 3.8.2
       - name: BUILD JAR
-        run: mvn -B -DskipTests package
+        run: mvn -B -q -DskipTests package
       - name: Package artifact
         run: |
           VERSION="${GITHUB_SHA::8}-$(date +%Y%m%d%H%M%S)"
@@ -37,4 +37,4 @@ jobs:
         run: |
           PORT="${{ secrets.EC2_SSH_PORT || 22 }}"
           scp -o StrictHostKeyChecking=no -P "$PORT" bundle-*.tgz \
-            ec2-user@ec2-44-245-179-63.us-west-2.compute.amazonaws.com/:/tmp/
+            ec2-user@ec2-44-245-179-63.us-west-2.compute.amazonaws.com:/tmp/
