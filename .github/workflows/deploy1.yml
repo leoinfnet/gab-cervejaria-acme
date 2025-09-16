@@ -60,7 +60,13 @@ jobs:
               APP_DIR=/opt/app
               REL_DIR=\$APP_DIR/releases/\$VERSION
               TARBALL=/tmp/bundle-\$VERSION.tgz
-          
+              PREV_TARGET=""
+              if [ -L "$APP_DIR/current" ]; then
+                PREV_TARGET="$(readlink -f "$APP_DIR/current")"
+              elif [ -L "$APP_DIR/current/app.jar" ]; then
+                PREV_TARGET="$(dirname "$(readlink -f "$APP_DIR/current/app.jar")")"
+              fi
+                echo "prev_target=${PREV_TARGET}" | sudo tee "$APP_DIR/.prev_target" >/dev/null
               # sanity check
               [ -f \"\$TARBALL\" ] || { echo \"ERRO: pacote não existe: \$TARBALL\" >&2; exit 2; }
           
@@ -92,3 +98,32 @@ jobs:
             echo "Healthcheck falhou: não recebeu 200 em 15s" >&2
             exit 1
           '
+
+      - name: Rollback to previous
+        if: failure()    # roda somente se algum step anterior do job falhou (ex.: o health)
+        run: |
+          set -euo pipefail
+          PORT="${{ secrets.EC2_SSH_PORT || 22 }}"
+          USER=ec2-user
+          HOST=ec2-44-245-179-63.us-west-2.compute.amazonaws.com
+
+          ssh -o StrictHostKeyChecking=no -p "$PORT" "$USER@$HOST" bash -lc '
+            SERVICE=cervejaria
+            APP_DIR=/opt/app
+            PREV_FILE="$APP_DIR/.prev_target"
+
+            if [ ! -f "$PREV_FILE" ]; then
+              echo "Sem marcador de versão anterior ($PREV_FILE). Nada a fazer." >&2
+              exit 1
+            fi
+
+            PREV_TARGET=$(cut -d= -f2 < "$PREV_FILE")
+            if [ -z "$PREV_TARGET" ] || [ ! -d "$PREV_TARGET" ]; then
+              echo "Marcador inválido ou release anterior inexistente: $PREV_TARGET" >&2
+              exit 1
+            fi
+
+            echo "Rollback para: $PREV_TARGET"
+            sudo ln -sfn "$PREV_TARGET"         "$APP_DIR/current"
+            sudo ln -sfn "$PREV_TARGET/app.jar" "$APP_DIR/current/app.jar"
+            sudo systemctl restart "$SERVICE"
