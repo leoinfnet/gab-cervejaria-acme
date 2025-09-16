@@ -83,4 +83,3 @@ jobs:
           
             # (opcional) limpar bundles antigos em /tmp:
             # sudo find /tmp -maxdepth 1 -name "bundle-*.tgz" -mtime +2 -delete
-          '
