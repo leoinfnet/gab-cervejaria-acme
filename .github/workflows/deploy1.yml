@@ -37,4 +37,4 @@ jobs:
         run: |
           PORT="${{ secrets.EC2_SSH_PORT || 22 }}"
           scp -o StrictHostKeyChecking=no -P "$PORT" bundle-*.tgz \
-            "ec2-user@https://ec2-44-245-179-63.us-west-2.compute.amazonaws.com/:/tmp/"
+            ec2-user@https://ec2-44-245-179-63.us-west-2.compute.amazonaws.com/:/tmp/
