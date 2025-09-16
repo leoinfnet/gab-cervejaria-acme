@@ -2,7 +2,7 @@ name: sonar_guard.yml
 on:
   push:
     branches:
-      - main
+      - outra
 jobs:
   sonar-guard:
     runs-on: ubuntu-latest
@@ -26,7 +26,7 @@ jobs:
         TOTAL=$(curl -sSf -u "${SONAR_TOKEN}:" "$URL" | jq -r '.total // 0')
         echo "Reliability (BUG) = ${TOTAL}"
         echo "total=${TOTAL}" >> "$GITHUB_OUTPUT"
-        echo "👉 Reliability issues (OPEN/CONFIRMED) = $TOTAL"
+        echo " Reliability issues (OPEN/CONFIRMED) = $TOTAL"
     - name: Abrir Issue se Reliability > 10
       if: ${{ steps.sonar_rel_count.outputs.total > 5 }}
       env:
