@@ -72,14 +72,23 @@ jobs:
           
               sudo systemctl daemon-reload
               sudo systemctl restart \"\$SERVICE\"
-          
-               for i in {1..15}; do
-                 CODE=\$(curl -s -o /dev/null -w \"%{http_code}\" --max-time 1 http://localhost:8080/login)
-                  if [ \"\$CODE\" = \"200\" ]; then
-                     echo \"Health OK (HTTP 200) em \${i}s\"
-                  exit 0
-                  fi
-                  sleep 1
-                done
-          
             '"
+      - name: Health check (HTTP 200 em /)
+        run: |
+          set -euo pipefail
+          PORT="${{ secrets.EC2_SSH_PORT || 22 }}"
+          USER=ec2-user
+          HOST=ec2-44-245-179-63.us-west-2.compute.amazonaws.com
+
+          ssh -o StrictHostKeyChecking=no -p "$PORT" "$USER@$HOST" bash -lc '
+            for i in {1..15}; do
+              CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 1 http://localhost:8080/login)
+              if [ "$CODE" = "200" ]; then
+                echo "Health OK (HTTP 200) em ${i}s"
+                exit 0
+              fi
+              sleep 1
+            done
+            echo "Healthcheck falhou: não recebeu 200 em 15s" >&2
+            exit 1
+          '
