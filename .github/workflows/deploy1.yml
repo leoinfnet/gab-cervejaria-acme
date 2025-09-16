@@ -25,7 +25,7 @@ jobs:
       - name: Package artifact
         run: |
           VERSION="${GITHUB_SHA::8}-$(date +%Y%m%d%H%M%S)"
-          echo "$VERSION" > version.txt
+          echo "$VERSION" > bundle/version.txt
           mkdir -p bundle && cp target/*.jar bundle/app.jar
           tar czf bundle-${VERSION}.tgz -C bundle .
       - name: ADD SSH KEY
@@ -38,3 +38,49 @@ jobs:
           PORT="${{ secrets.EC2_SSH_PORT || 22 }}"
           scp -o StrictHostKeyChecking=no -P "$PORT" bundle-*.tgz \
             ec2-user@ec2-44-245-179-63.us-west-2.compute.amazonaws.com:/tmp/
+
+      - name: Deploy on EC2 (atomic symlink + restart)
+        run: |
+            VERSION="$(cat version.txt)"
+            PORT="${{ secrets.EC2_SSH_PORT || 22 }}"
+          ssh -o StrictHostKeyChecking=no -p "$PORT" \
+          ec2-user@ec2-44-245-179-63.us-west-2.compute.amazonaws.com bash -lc '
+            set -euo pipefail
+          
+            SERVICE=cervejaria
+            APP_DIR=/opt/app
+          
+            # 1) Descobrir o bundle mais recente enviado para /tmp
+            TARBALL="$(ls -1t /tmp/bundle-*.tgz | head -n1)"
+            test -n "$TARBALL" || { echo "Nenhum /tmp/bundle-*.tgz encontrado"; exit 2; }
+          
+            # 2) Conferir se há version.txt no bundle
+            if ! tar -tf "$TARBALL" | grep -q "^version.txt$"; then
+              echo "version.txt não encontrado dentro do bundle"; exit 2
+            fi
+          
+            # 3) Ler a versão de dentro do bundle (aceita "123..." ou "VERSION=123...")
+            RAW_VERSION="$(tar -xOf "$TARBALL" version.txt | tr -d "\r\n")"
+            if [[ "$RAW_VERSION" == VERSION=* ]]; then
+              VERSION="${RAW_VERSION#VERSION=}"
+            else
+              VERSION="$RAW_VERSION"
+            fi
+            echo "Versão detectada no bundle: $VERSION"
+          
+            # 4) Extrair para releases/<versão> e trocar symlinks
+            REL_DIR="$APP_DIR/releases/$VERSION"
+            sudo mkdir -p "$REL_DIR"
+            sudo tar xzf "$TARBALL" -C "$REL_DIR"
+          
+            # 5) Swap atômico dos links
+            sudo ln -sfn "$REL_DIR" "$APP_DIR/current"
+            sudo ln -sfn "$REL_DIR/app.jar" "$APP_DIR/current/app.jar"
+          
+            # 6) Restart do serviço
+            sudo systemctl daemon-reload
+            sudo systemctl restart "$SERVICE"
+          
+            # (opcional) limpar bundles antigos em /tmp:
+            # sudo find /tmp -maxdepth 1 -name "bundle-*.tgz" -mtime +2 -delete
+          '
