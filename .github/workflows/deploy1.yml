@@ -45,7 +45,7 @@ jobs:
           VERSION="$(cat bundle/version.txt)"
           PORT="${{ secrets.EC2_SSH_PORT || 22 }}"
           USER=ec2-user
-          HOST=ec2-user@ec2-44-245-179-63.us-west-2.compute.amazonaws.com
+          HOST=ec2-44-245-179-63.us-west-2.compute.amazonaws.com
 
           # (Opcional) teste rápido de SSH
           ssh -o StrictHostKeyChecking=no -p "$PORT" "$USER@$HOST" "echo conectado; uname -a"
