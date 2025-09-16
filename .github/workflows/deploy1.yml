@@ -58,26 +58,7 @@ jobs:
               set -euo pipefail
               SERVICE=cervejaria
               APP_DIR=/opt/app
-              REL_DIR=\$APP_DIR/releases/\$VERSION
-              TARBALL=/tmp/bundle-\$VERSION.tgz
-              PREV_TARGET=""
-              if [ -L "$APP_DIR/current" ]; then
-                PREV_TARGET="$(readlink -f "$APP_DIR/current")"
-              elif [ -L "$APP_DIR/current/app.jar" ]; then
-                PREV_TARGET="$(dirname "$(readlink -f "$APP_DIR/current/app.jar")")"
-              fi
-                echo "prev_target=${PREV_TARGET}" | sudo tee "$APP_DIR/.prev_target" >/dev/null
-              # sanity check
-              [ -f \"\$TARBALL\" ] || { echo \"ERRO: pacote não existe: \$TARBALL\" >&2; exit 2; }
-          
-              sudo mkdir -p \"\$REL_DIR\"
-              sudo tar xzf \"\$TARBALL\" -C \"\$REL_DIR\"
-          
-              sudo ln -sfn \"\$REL_DIR\" \"\$APP_DIR/current\"
-              sudo ln -sfn \"\$REL_DIR/app.jar\" \"\$APP_DIR/current/app.jar\"
-          
-              sudo systemctl daemon-reload
-              sudo systemctl restart \"\$SERVICE\"
+              echo $APP_DIR
             '"
       - name: Health check (HTTP 200 em /)
         run: |
