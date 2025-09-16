@@ -41,16 +41,29 @@ jobs:
 
       - name: Deploy on EC2 (atomic symlink + restart)
         run: |
-            VERSION="$(cat bundle/version.txt)"
-            PORT="${{ secrets.EC2_SSH_PORT || 22 }}"
-            ssh -o StrictHostKeyChecking=no -p "$PORT" \
-               ec2-user@ec2-44-245-179-63.us-west-2.compute.amazonaws.com bash -lc "
-                set -euo pipefail
-                APP_DIR=/opt/app
-                REL_DIR=\$APP_DIR/releases/\$VERSION
-                sudo mkdir -p \$REL_DIR
-                sudo tar xzf /tmp/bundle-\$VERSION.tgz -C \$REL_DIR
-                sudo ln -sfn \$REL_DIR \$APP_DIR/current
-                sudo ln -sfn \$REL_DIR/app.jar \$APP_DIR/current/app.jar
-                sudo systemctl daemon-reload
-                sudo systemctl restart cervejaria
+          set -euo pipefail
+          VERSION="$(cat bundle/version.txt)"
+          PORT="${{ secrets.EC2_SSH_PORT || 22 }}"
+          USER=ec2-user
+          HOST=ec2-user@ec2-44-245-179-63.us-west-2.compute.amazonaws.com
+
+          # (Opcional) teste rápido de SSH
+          ssh -o StrictHostKeyChecking=no -p "$PORT" "$USER@$HOST" "echo conectado; uname -a"
+
+          # Passa VERSION para o remoto e roda script lá
+          ssh -o StrictHostKeyChecking=no -p "$PORT" "$USER@$HOST" \
+          "VERSION='$VERSION' bash -lc '
+              set -euo pipefail
+              SERVICE=cervejaria
+              APP_DIR=/opt/app
+              REL_DIR=$APP_DIR/releases/$VERSION
+      
+              sudo mkdir -p \"$REL_DIR\"
+              sudo tar xzf /tmp/bundle-$VERSION.tgz -C \"$REL_DIR\"
+      
+              sudo ln -sfn \"$REL_DIR\" \"$APP_DIR/current\"
+              sudo ln -sfn \"$REL_DIR/app.jar\" \"$APP_DIR/current/app.jar\"
+      
+              sudo systemctl daemon-reload
+              sudo systemctl restart \"$SERVICE\"
+            '"
