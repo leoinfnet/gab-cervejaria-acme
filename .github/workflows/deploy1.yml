@@ -74,7 +74,7 @@ jobs:
               sudo systemctl restart \"\$SERVICE\"
           
                for i in {1..15}; do
-                 CODE=\$(curl -s -o /dev/null -w \"%{http_code}\" --max-time 1 http://localhost:8080/)
+                 CODE=\$(curl -s -o /dev/null -w \"%{http_code}\" --max-time 1 http://localhost:8080/login)
                   if [ \"\$CODE\" = \"200\" ]; then
                      echo \"Health OK (HTTP 200) em \${i}s\"
                   exit 0
