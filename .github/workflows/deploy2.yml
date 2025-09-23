@@ -59,4 +59,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "ci: bump versão para ${{ steps.bump.outputs.version }}"
-          file_pattern: pom.xml **/pom.xml
+          file_pattern: pom.xml
