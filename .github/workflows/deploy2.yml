@@ -23,14 +23,14 @@ jobs:
       - name: Bump MAJOR no POM e exportar
         id: bump
         run: |
-             set -e
+            set -e
             mvn -B -q build-helper:parse-version versions:set \
               -DnewVersion=\${parsedVersion.nextMajorVersion}.0.0 \
               -DprocessAllModules -DgenerateBackupPoms=false
             
-            VER="$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout)"
-            echo "Nova versão: $VER"
-            echo "version=$VER" >> "$GITHUB_OUTPUT"
+              VER="$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout)"
+              echo "Nova versão: $VER"
+              echo "version=$VER" >> "$GITHUB_OUTPUT"
       - name: BUILD JAR
         run: mvn -B -q -DskipTests package
       - name: Copiar artefato para pasta docker
