@@ -75,7 +75,7 @@ jobs:
             USER=ec2-user
             HOST=ec2-44-245-179-63.us-west-2.compute.amazonaws.com
             
-            echo "Conectando no $HOST e rodando run.sh com VERSION=$VERSION"
+            echo "Conectando no $HOST e rodando run.sh
             
             # (Opcional) teste de conexão
             ssh -o StrictHostKeyChecking=no -p "$PORT" "$USER@$HOST" "echo conectado; uname -a"
