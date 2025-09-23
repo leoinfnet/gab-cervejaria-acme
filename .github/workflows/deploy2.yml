@@ -54,7 +54,7 @@ jobs:
       - name: Push da imagem (tag específica)
         run: |
           VERSION="${{ steps.bump.outputs.version }}"
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/leogloriainfnet/cervejaria-acme-ele:${{ steps.bump.outputs.version }}
+          docker push leogloriainfnet/cervejaria-acme-ele:${{ steps.bump.outputs.version }}
       - name: Commitar pom.xml com nova versão
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
