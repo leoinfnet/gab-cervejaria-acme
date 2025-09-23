@@ -62,3 +62,24 @@ jobs:
         with:
           commit_message: "ci: bump versão para ${{ steps.bump.outputs.version }}"
           file_pattern: pom.xml
+
+      - name: ADD SSH KEY
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+      - name: Deploy on EC2 (run.sh)
+        run: |
+            set -euo pipefail
+            
+            PORT="${{ secrets.EC2_SSH_PORT || 22 }}"
+            USER=ec2-user
+            HOST=ec2-44-245-179-63.us-west-2.compute.amazonaws.com
+            
+            echo "Conectando no $HOST e rodando run.sh com VERSION=$VERSION"
+            
+            # (Opcional) teste de conexão
+            ssh -o StrictHostKeyChecking=no -p "$PORT" "$USER@$HOST" "echo conectado; uname -a"
+               
+            # Executa o script no remoto com a versão injetada
+            ssh -o StrictHostKeyChecking=no -p "$PORT" "$USER@$HOST" \
+              "chmod +x /home/ec2-user/run.sh && /home/ec2-user/run.sh"
