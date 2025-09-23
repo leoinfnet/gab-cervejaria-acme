@@ -35,7 +35,8 @@ jobs:
         run: mvn -B -q -DskipTests package
       - name: Copiar artefato para pasta docker
         run: |
-          cp target/cervejaria-acme-0.0.1.jar docker/
+          VERSION="${{ steps.bump.outputs.version }}"
+          cp target/cervejaria-acme-$VERSION.jar docker/
       - name: LS
         run: | 
           ls docker/
