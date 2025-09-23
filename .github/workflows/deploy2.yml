@@ -20,11 +20,22 @@ jobs:
         uses: stCarolas/setup-maven@v5
         with:
           maven-version: 3.8.2
+      - name: Bump MAJOR no POM e exportar
+        id: bump
+        run: |
+             set -e
+            mvn -B -q build-helper:parse-version versions:set \
+              -DnewVersion=\${parsedVersion.nextMajorVersion}.0.0 \
+              -DprocessAllModules -DgenerateBackupPoms=false
+            
+            VER="$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout)"
+            echo "Nova versão: $VER"
+            echo "version=$VER" >> "$GITHUB_OUTPUT"
       - name: BUILD JAR
         run: mvn -B -q -DskipTests package
       - name: Copiar artefato para pasta docker
         run: |
-          cp target/cervejaria-acme-0.0.1-SNAPSHOT.jar docker/
+          cp target/cervejaria-acme-0.0.1.jar docker/
       - name: LS
         run: | 
           ls docker/
@@ -39,3 +50,7 @@ jobs:
           registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Push da imagem (tag específica)
+        run: |
+          VERSION="${{ steps.bump.outputs.version }}"
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/leogloriainfnet/cervejaria-acme-ele:$VERSION
