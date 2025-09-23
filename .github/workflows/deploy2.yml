@@ -28,4 +28,9 @@ jobs:
       - name: LS
         run: | 
           ls docker/
+      - name: Build Docker
+        run: |
+          cd docker
+          docker build . -t leogloriainfnet/cervejaria-acme-ele
+        
           
