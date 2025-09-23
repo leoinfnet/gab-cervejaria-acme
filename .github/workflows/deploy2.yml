@@ -55,3 +55,8 @@ jobs:
         run: |
           VERSION="${{ steps.bump.outputs.version }}"
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/leogloriainfnet/cervejaria-acme-ele:$VERSION
+      - name: Commitar pom.xml com nova versão
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "ci: bump versão para ${{ steps.bump.outputs.version }}"
+          file_pattern: pom.xml **/pom.xml
