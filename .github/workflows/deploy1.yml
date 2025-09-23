@@ -2,7 +2,7 @@ name: deploy1.yml
 on:
   push:
     branches:
-      - main
+      - outra
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
@@ -55,9 +55,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -p "$PORT" "$USER@$HOST" \
             "VERSION='$VERSION' bash -lc '
               set -euo pipefail
-              SERVICE=cervejaria
-              APP_DIR=/opt/app
-              echo $APP_DIR
+          
             '"
       - name: Health check (HTTP 200 em /)
         run: |

@@ -1,0 +1,31 @@
+name: deploy2.yml
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install JAVA
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: maven
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.8.2
+      - name: BUILD JAR
+        run: mvn -B -q -DskipTests package
+      - name: Copiar artefato para pasta docker
+        run: |
+          cp target/cervejaria-acme-0.0.1-SNAPSHOT.jar docker/
+      - name: LS
+        run: | 
+          ls docker/
+          
