@@ -45,9 +45,14 @@ jobs:
             set -e
             TYPE=${{ steps.version-type.outputs.version_type }}
             case "$TYPE" in
-              major)      mvn -B build-helper:parse-version versions:set -DnewVersion=${parsedVersion.nextMajorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion} ;;
-              minor)   mvn -B build-helper:parse-version versions:set -DnewVersion=${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.${parsedVersion.incrementalVersion} ;;
-              patch) mvn -B build-helper:parse-version versions:set -DnewVersion=${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.nextIncrementalVersion}
+              major)             mvn -B -q build-helper:parse-version versions:set \
+                                -DnewVersion=\${parsedVersion.nextMajorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} \
+                                -DprocessAllModules -DgenerateBackupPoms=false     
+          
+          
+
+#              minor)   mvn -B build-helper:parse-version versions:set -DnewVersion=${parsedVersion.majorVersion}.${parsedVersion.nextMinorVersion}.${parsedVersion.incrementalVersion} ;;
+ #             patch) mvn -B build-helper:parse-version versions:set -DnewVersion=${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.nextIncrementalVersion}
             esac
             NEW_VER="$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout)"
             echo "Nova versão: $NEW_VER"
@@ -90,12 +95,13 @@ jobs:
 #        run: |
 #          VERSION="${{ steps.bump.outputs.version }}"
 #          docker push leogloriainfnet/cervejaria-acme-ele:${{ steps.bump.outputs.version }}
-#      - name: Commitar pom.xml com nova versão
-#        uses: stefanzweifel/git-auto-commit-action@v5
-#        with:
-#          commit_message: "ci: bump versão para ${{ steps.bump.outputs.version }}"
-#          file_pattern: pom.xml
-#
+      - name: Commitar pom.xml com nova versão
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "ci: bump versão para ${{ steps.bump.outputs.version }}"
+          file_pattern: pom.xml
+          branch: main
+
 #      - name: ADD SSH KEY
 #        uses: webfactory/ssh-agent@v0.9.0
 #        with:
