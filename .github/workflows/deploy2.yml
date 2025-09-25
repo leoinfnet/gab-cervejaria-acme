@@ -9,8 +9,6 @@ on:
 #    branches:
 #      - main
 
-
-
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
@@ -42,6 +40,21 @@ jobs:
           echo "$VERSION_TYPE"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Calcular Nova versao
+        run: |
+            set -e
+            TYPE=${{ steps.version-type.outputs.version_type }}
+            case "$TYPE" in
+              major)      mvn -B -q build-helper:parse-version versions:set \
+                            -DnewVersion=\${parsedVersion.nextMajorVersion}.0.0 \
+                            -DprocessAllModules -DgenerateBackupPoms=false ;;
+              minor)     mvn -B -q build-helper:parse-version versions:set \
+                        -DnewVersion=\${parsedVersion.majorVersion}.0.0 \
+                        -DprocessAllModules -DgenerateBackupPoms=false ;;
+            esac
+            NEW_VER="$(mvn -q help:evaluate -Dexpression=project.version -DforceStdout)"
+            echo "Nova versão: NEW_VER"
+      
 
       - name: Bump MAJOR no POM e exportar
         id: bump
