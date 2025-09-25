@@ -39,6 +39,7 @@ jobs:
           if echo "$LABELS" | grep -q 'version:major'; then VERSION_TYPE="major"; fi
           if echo "$LABELS" | grep -q 'version:minor'; then VERSION_TYPE="minor"; fi
            echo "version_type=$VERSION_TYPE" >> $GITHUB_OUTPUT
+          echo "$VERSION_TYPE
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
