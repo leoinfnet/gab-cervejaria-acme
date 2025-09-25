@@ -22,10 +22,24 @@ jobs:
         uses: stCarolas/setup-maven@v5
         with:
           maven-version: 3.8.2
+
+      - name: Determinar tipo de versão pela label
+        id: version-type
+        run: |
+          echo "Verificando labels do PR..."
+          LABELS=$(gh pr view ${{ github.event.pull_request.number }} --json labels -q ".labels[].name")
+          VERSION_TYPE="patch"
+          if echo "$LABELS" | grep -q 'version:major'; then VERSION_TYPE="major"; fi
+          if echo "$LABELS" | grep -q 'version:minor'; then VERSION_TYPE="minor"; fi
+           echo "version_type=$VERSION_TYPE" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Bump MAJOR no POM e exportar
         id: bump
         run: |
             set -e
+           
             mvn -B -q build-helper:parse-version versions:set \
               -DnewVersion=\${parsedVersion.nextMajorVersion}.0.0 \
               -DprocessAllModules -DgenerateBackupPoms=false
@@ -47,39 +61,38 @@ jobs:
           cd docker
           docker build . -t leogloriainfnet/cervejaria-acme-ele:${{ steps.bump.outputs.version }}
 
-      - name: Docker Login (Docker Hub)
-        uses: docker/login-action@v3
-        with:
-          registry: docker.io
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Push da imagem (tag específica)
-        run: |
-          VERSION="${{ steps.bump.outputs.version }}"
-          docker push leogloriainfnet/cervejaria-acme-ele:${{ steps.bump.outputs.version }}
-      - name: Commitar pom.xml com nova versão
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "ci: bump versão para ${{ steps.bump.outputs.version }}"
-          file_pattern: pom.xml
-
-      - name: ADD SSH KEY
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
-      - name: Deploy on EC2 (run.sh)
-        run: |
-            set -euo pipefail
-            
-            PORT="${{ secrets.EC2_SSH_PORT || 22 }}"
-            USER=ec2-user
-            HOST=ec2-44-245-179-63.us-west-2.compute.amazonaws.com
-            
-            echo "Conectando no $HOST e rodando run.sh"
-            
-            # (Opcional) teste de conexão
-            ssh -o StrictHostKeyChecking=no -p "$PORT" "$USER@$HOST" "echo conectado; uname -a"
-               
-            # Executa o script no remoto com a versão injetada
-            ssh -o StrictHostKeyChecking=no -p "$PORT" "$USER@$HOST" \
-              "chmod +x /home/ec2-user/run.sh && /home/ec2-user/run.sh"
+#      - name: Docker Login (Docker Hub)
+#        uses: docker/login-action@v3
+#        with:
+#          registry: docker.io
+#          username: ${{ secrets.DOCKERHUB_USERNAME }}
+#          password: ${{ secrets.DOCKERHUB_TOKEN }}
+#      - name: Push da imagem (tag específica)
+#        run: |
+#          VERSION="${{ steps.bump.outputs.version }}"
+#          docker push leogloriainfnet/cervejaria-acme-ele:${{ steps.bump.outputs.version }}
+#      - name: Commitar pom.xml com nova versão
+#        uses: stefanzweifel/git-auto-commit-action@v5
+#        with:
+#          commit_message: "ci: bump versão para ${{ steps.bump.outputs.version }}"
+#          file_pattern: pom.xml
+#
+#      - name: ADD SSH KEY
+#        uses: webfactory/ssh-agent@v0.9.0
+#        with:
+#          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+#      - name: Deploy on EC2 (run.sh)
+#        run: |
+#            set -euo pipefail
+#
+#            PORT="${{ secrets.EC2_SSH_PORT || 22 }}"
+#            USER=ec2-user
+#            HOST=ec2-44-245-179-63.us-west-2.compute.amazonaws.com
+#
+#            echo "Conectando no $HOST e rodando run.sh"
+#
+#            ssh -o StrictHostKeyChecking=no -p "$PORT" "$USER@$HOST" "echo conectado; uname -a"
+#
+#            # Executa o script no remoto com a versão injetada
+#            ssh -o StrictHostKeyChecking=no -p "$PORT" "$USER@$HOST" \
+#              "chmod +x /home/ec2-user/run.sh && /home/ec2-user/run.sh"
