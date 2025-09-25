@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>br.com.acme</groupId>
 	<artifactId>cervejaria-acme</artifactId>
-	<version>7.0.0</version>
+	<version>9.1.1</version>
 	<name>cervejaria-acme</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
