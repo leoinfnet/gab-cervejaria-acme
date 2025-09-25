@@ -56,6 +56,8 @@ jobs:
             echo "Nova versão: $NEW_VER"
       
 
+
+
 #      - name: Bump MAJOR no POM e exportar
 #        id: bump
 #        run: |
